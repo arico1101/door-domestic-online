@@ -1,0 +1,17 @@
+{
+  "name": "tobira-domestic-online",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "for n in 2 3 4 5 6; do N=$n node test/play.mjs || exit 1; done && node test/ops.mjs",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "node storybook/validate.mjs && storybook build"
+  },
+  "devDependencies": {
+    "@storybook/html-vite": "^10.6.0",
+    "storybook": "^10.6.0",
+    "wrangler": "^4"
+  }
+}
