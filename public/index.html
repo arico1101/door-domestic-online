@@ -460,6 +460,9 @@ h1.game-title{font-size:clamp(32px,8vw,48px); font-weight:900; letter-spacing:.1
 /* 「195万」がスマホで折り返さないように、1項目は必ず1行で出す */
 .pcard .row span{white-space:nowrap;}
 .pcard .age{white-space:nowrap;}
+/* 名前が長くても「あなた」や年齢が縦に積み重ならないよう、名前のほうを省略する */
+.pcard .nm .pn{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.mine-badge{flex:none; white-space:nowrap;}
 .m1.neg{color:#C25B5B;}
 /* 家庭カードの「まち・仕送り・見えていない選択肢」の行 */
 .fam-line{font-size:11.5px; font-weight:700; color:#7C8B99; margin-top:9px; line-height:1.75;
@@ -498,7 +501,7 @@ body.host-open #overlay{display:none !important;}
 
 @media (max-width:640px){
   .topbar .logo{display:none;}
-  .pcard{flex:1 0 138px; padding:7px 9px;}
+  .pcard{flex:1 0 150px; padding:7px 9px;}
   .pcard .av{width:32px; height:32px;}
   #game{padding-bottom:96px;}
 }
@@ -506,6 +509,24 @@ body.host-open #overlay{display:none !important;}
   .help-btn .lbl{display:none;}
   .help-btn{width:40px; padding:0;}
 }
+/* スマホのせまい幅では、上の帯の手番は顔だけにする（名前は下のサイコロのボタンに出ている）。
+   文字を残すと1〜2文字だけが見切れて、かえって読めない */
+@media (max-width:420px){
+  .turn-pill{flex:none;}
+  .turn-pill .tp-txt{display:none;}
+  .turn-pill .tp-off{font-size:.72em;}
+  .turn-pill.only-txt{flex:1;}
+  .turn-pill.only-txt .tp-txt{display:block;}
+  /* 数字の増減は「40万 → 94万」を1行で読ませる（金額の途中で折り返さない） */
+  .chg-char{width:58px; height:80px;}
+  .chg-body{gap:9px;}
+  .chg-r{grid-template-columns:46px 1fr auto; gap:6px; padding-left:9px; padding-right:9px;}
+  .chg-r .v{font-size:13.5px;}
+  /* 進行役メニュー：名前は1行に、タグとボタンはその下に並べる */
+  .host-row .hn{flex:1 1 100%; min-width:0;}
+}
+.chg-r .v, .chg-r .v s, .chg-r .d{white-space:nowrap;}
+.host-row .tag{white-space:nowrap;}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important;}}
 </style>
 </head>

@@ -722,7 +722,7 @@ function playerCardBody(p) {
   return `
       <div class="av" style="${faceBg(p)}; border-color:${p.color}"></div>
       <div style="min-width:0; flex:1">
-        <div class="nm">${p.name}${p.id === MYPID ? `<span class="mine-badge">あなた</span>` : ""}${p.done && !p.left ? ic("goal", "s") : ""}
+        <div class="nm"><span class="pn">${p.name}</span>${p.id === MYPID ? `<span class="mine-badge">あなた</span>` : ""}${p.done && !p.left ? ic("goal", "s") : ""}
           <span class="age">${M.AGES[p.pos]}歳</span></div>
         <div class="row">
           ${money(p.money)}${learn(p.learn)}${happy(p.happy)}
@@ -1221,6 +1221,7 @@ function render() {
     hostTools();
     renderBoard(); renderStrip(); shown = {}; renderTokens();
     $("turnPill").style.removeProperty("--ring");
+    $("turnPill").classList.add("only-txt");
     $("turnPill").innerHTML = `<span class="tp-txt">家庭カードをかくにん中</span>`;
     $("diceBtn").disabled = true;
     $("diceLabel").textContent = "まっています";
@@ -1255,6 +1256,7 @@ function render() {
     const cur = G.players[G.turn];
     const mine = cur && cur.id === MYPID;
     $("turnPill").style.setProperty("--ring", cur.color);
+    $("turnPill").classList.remove("only-txt");
     $("turnPill").innerHTML = `<span class="av" style="${faceBg(cur)}"></span>`
       + `<span class="tp-txt">${cur.name} さんの番・${M.AGES[cur.pos]}歳</span>`
       + (cur.connected ? "" : `<span class="tp-off">⚠️ 切断中</span>`);

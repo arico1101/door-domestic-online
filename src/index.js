@@ -31,6 +31,12 @@ export class Room {
     this.g = null;
     state.blockConcurrencyWhile(async () => {
       this.g = (await state.storage.get("game")) || null;
+      /* 入れかえ（デプロイなど）で接続が切れた人は、切断中として見せる。
+         休止から起きただけなら接続は生きているので、そのまま接続中になる */
+      if (this.g) {
+        const live = new Set(state.getWebSockets().map(ws => (ws.deserializeAttachment() || {}).pid));
+        this.g.players.forEach(p => { p.connected = live.has(p.id); });
+      }
     });
   }
 
