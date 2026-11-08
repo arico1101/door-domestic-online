@@ -1,0 +1,39 @@
+name: Deploy
+
+# main に入った変更を、そのまま公開URL（tobira-domestic.tobira-online.workers.dev）へ反映する。
+# 手で流したいときは Actions の画面から Run workflow でも動く。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 続けてマージしたときに、古いほうが後から上書きしないようにする
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Show the deployed URL
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          echo "### Deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "${DEPLOYMENT_URL:-https://tobira-domestic.tobira-online.workers.dev}" >> "$GITHUB_STEP_SUMMARY"

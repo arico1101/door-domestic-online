@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>トビラ 国内版 オンライン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#F2F9FD; --card:#FFFFFF; --ink:#3F5266; --sub:#8A97A5; --line:#E3EDF4;
+  --pink:#F4879F; --gold:#FBD96B; --btn:#5B7FA8; --btn-d:#43617F;
+  --money:#D9A32B; --learn:#4E8FC0; --happy:#E4708F;
+  --ok:#86D9A5; --lock:#FFC98C; --unseen:#B7A6EA;
+  --wrap:1180px;
+  --sh:0 4px 16px rgba(63,82,102,.10);
+  --sh-s:0 2px 8px rgba(63,82,102,.10);
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
+  background:var(--page); color:var(--ink); line-height:1.8;
+  font-variant-numeric:tabular-nums;
+}
+button{font-family:inherit; cursor:pointer; border:none;}
+.screen{display:none; min-height:100vh;}
+.screen.active{display:block;}
+.ic{width:1.05em; height:1.05em; vertical-align:-.16em; flex:none;}
+.ic.s{width:.92em; height:.92em;}
+
+/* ---------- ロビー・待機 ---------- */
+#lobby,#wait{display:none; place-items:center; padding:26px 18px;}
+#lobby.active,#wait.active{display:grid;}
+.setup-card{width:min(520px,100%); margin:0 auto; text-align:center;}
+.title-door{width:104px; height:128px; margin:0 auto 14px; position:relative;
+  background:var(--pink); border-radius:52px 52px 10px 10px; display:grid; place-items:center;
+  box-shadow:0 6px 0 rgba(214,104,130,.4);}
+.title-door .leaf{width:82px; height:106px; border-radius:41px 41px 7px 7px; background:#FBD96B;
+  position:relative; transition:transform .6s cubic-bezier(.2,.8,.3,1.2); transform-origin:left center;}
+.title-door:hover .leaf{transform:perspective(400px) rotateY(-36deg);}
+.title-door .knob{position:absolute; right:12px; top:56px; width:11px; height:11px;
+  border-radius:50%; background:var(--btn);}
+h1.game-title{font-size:clamp(32px,8vw,48px); font-weight:900; letter-spacing:.1em;}
+.game-sub{font-size:14px; font-weight:700; color:var(--sub); margin:6px 0 24px;}
+.player-inputs{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
+.p-row{display:flex; align-items:center; gap:10px; background:var(--card); border-radius:16px;
+  padding:9px 14px; box-shadow:var(--sh-s);}
+.p-dot{width:20px; height:20px; border-radius:50%; flex:none;}
+.p-row input{flex:1; border:none; outline:none; font-family:inherit; font-size:16px;
+  font-weight:700; color:var(--ink); background:transparent; min-width:0;}
+.p-row .rm{background:transparent; font-size:17px; color:var(--happy); font-weight:900; padding:2px 6px;}
+.row-btns{display:flex; gap:10px; justify-content:center; margin-bottom:18px; flex-wrap:wrap;}
+.chip-btn{background:var(--card); border-radius:999px; padding:8px 18px; font-weight:700;
+  font-size:13.5px; color:var(--ink); box-shadow:var(--sh-s);
+  display:inline-flex; align-items:center; gap:6px;}
+.chip-btn.on{background:var(--gold); color:#7A6320;}
+.fac-toggle{display:flex; align-items:flex-start; gap:9px; text-align:left; background:var(--card);
+  border-radius:16px; padding:12px 15px; font-size:12.5px; font-weight:700; line-height:1.7;
+  margin:0 auto 20px; width:min(440px,100%); cursor:pointer; box-shadow:var(--sh-s);}
+.fac-toggle input{width:18px; height:18px; margin-top:3px; accent-color:var(--pink); flex:none;}
+/* 盤面の長さのえらびかた */
+.mode-pick{background:var(--card); border-radius:16px; padding:12px 15px 14px; margin:0 auto 12px;
+  width:min(440px,100%); box-shadow:var(--sh-s);}
+.mode-pick .k{font-size:12.5px; font-weight:900; color:var(--ink); margin-bottom:8px;}
+.mode-pick .row-btns{margin:0 0 6px; flex-wrap:wrap;}
+.mode-pick .chip-btn{box-shadow:inset 0 0 0 2px var(--line); background:#F7FBFD;}
+.mode-pick .chip-btn.on{background:var(--gold); color:#7A6320; box-shadow:inset 0 0 0 2px #E0AE28;}
+.mode-pick .note{font-size:11.5px; font-weight:700; color:var(--sub); line-height:1.7;}
+.fac-toggle small{color:var(--sub);}
+.big-btn{display:inline-block; background:var(--pink); color:#fff; font-size:18px; font-weight:900;
+  padding:15px 42px; border-radius:999px; letter-spacing:.08em; box-shadow:0 5px 0 #D66882;
+  transition:transform .08s;}
+.big-btn:active{transform:translateY(3px); box-shadow:0 2px 0 #D66882;}
+.setup-note{margin-top:16px; font-size:12.5px; line-height:1.85; color:var(--sub); font-weight:700;}
+.room-code{font-size:clamp(30px,9vw,46px); font-weight:900; letter-spacing:.3em;
+  color:var(--ink); background:var(--card); border-radius:18px; padding:12px 8px 12px 22px;
+  margin:6px auto 14px; width:min(400px,100%); box-shadow:var(--sh);}
+.wait-row{justify-content:space-between;}
+.wait-row .st{font-size:12px; font-weight:700; color:var(--sub);}
+
+/* ---------- ゲーム画面 ---------- */
+#game{padding:0 0 96px;}
+/* PCは1画面におさめる。盤面は横:縦 = 2.06 なので、残りの高さから横幅を決める。
+   ヘッダー・サイコロ・余白でおよそ 230px ぶんを引いている */
+@media (min-width:701px){
+  /* --board-aspect は盤面の縦横比。app.js が描くたびに入れかえる（36マス=1.386） */
+  :root{--wrap:min(1700px, calc((100vh - 244px) * var(--board-aspect, 1.386) + 24px));}
+}
+.sticky-head{position:sticky; top:0; z-index:40; background:var(--page);
+  padding:10px 12px 8px; box-shadow:0 8px 12px -10px rgba(63,82,102,.3);}
+.topbar{display:flex; align-items:center; gap:9px; max-width:var(--wrap); margin:0 auto 9px;}
+.topbar .logo{font-weight:900; font-size:17px; letter-spacing:.08em; color:var(--pink); flex:none;}
+.turn-pill{flex:1; min-width:0; display:flex; align-items:center; gap:9px;
+  background:color-mix(in srgb, var(--ring, var(--pink)) 17%, #fff);
+  box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--ring, var(--pink)) 45%, #fff);
+  border-radius:999px; padding:6px 14px; font-weight:900; font-size:clamp(13px,2.4vw,15px);
+  overflow:hidden;}
+.turn-pill .av{width:28px; height:28px; border-radius:50%; flex:none;
+  border:2px solid var(--ring, var(--pink));
+  background-color:#fff; background-size:cover; background-position:center 16%;}
+.turn-pill .tp-txt{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.turn-pill .tp-off{flex:none; font-size:.76em; color:var(--happy);}
+.help-btn{height:40px; border-radius:999px; background:var(--card); display:inline-flex;
+  align-items:center; justify-content:center; gap:6px; padding:0 15px; color:var(--btn);
+  box-shadow:var(--sh-s); flex:none;}
+.help-btn .ic{width:21px; height:21px;}
+.help-btn .lbl{font-size:12.5px; font-weight:900; color:var(--ink); white-space:nowrap;}
+.help-btn:active{transform:translateY(1px);}
+.players-strip{display:flex; gap:8px; overflow-x:auto; max-width:var(--wrap); margin:0 auto;
+  padding:2px 2px 6px;}
+.pcard{flex:1 0 156px; background:var(--card); border-radius:15px; padding:8px 11px;
+  box-shadow:var(--sh-s); display:flex; gap:9px; align-items:center; opacity:.72; transition:opacity .2s;}
+.pcard.now{opacity:1; box-shadow:0 0 0 2.5px var(--ring, var(--pink)), var(--sh-s);}
+.pcard.done{opacity:.45;} .pcard.off{opacity:.35;} .pcard.left{opacity:.3; filter:grayscale(1);}
+/* 押すとその人の家庭カードが開く */
+.pcard.tap{cursor:pointer; transition:opacity .2s, transform .08s;}
+.pcard.tap:hover{opacity:1;}
+.pcard.tap:active{transform:translateY(1px);}
+/* 自分のカードの「とくい」に付ける、本人だけの印 */
+.only-you{display:inline-flex; align-items:center; gap:3px; margin-left:6px; font-size:10px; font-weight:900;
+  color:#fff; background:var(--btn); border-radius:999px; padding:0 8px; vertical-align:1px;}
+.pcard .av{width:38px; height:38px; border-radius:50%; flex:none; border:2.5px solid var(--line);
+  background-color:#F7FBFD; background-size:cover; background-position:center 16%;}
+.pcard .nm{font-size:12.5px; font-weight:900; line-height:1.35; display:flex; align-items:center; gap:5px;}
+.pcard .age{font-size:10.5px; font-weight:700; color:var(--sub);}
+.pcard .row{display:flex; gap:8px; font-size:11px; font-weight:900; margin-top:1px;}
+.pcard .row span{display:inline-flex; align-items:center; gap:2px;}
+.m1{color:var(--money);} .m2{color:var(--learn);} .m3{color:var(--happy);}
+.mine-badge{font-size:10px; font-weight:900; color:#fff; background:var(--pink);
+  border-radius:999px; padding:0 7px;}
+.board-wrap{max-width:var(--wrap); margin:10px auto 0; padding:0 12px;}
+#board{display:block; width:100%; height:auto; border-radius:18px;}
+.controls{position:fixed; left:0; right:0; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  display:flex; justify-content:center; z-index:50; pointer-events:none;
+  background:linear-gradient(transparent,rgba(242,249,253,.9) 40%);}
+.dice-btn{pointer-events:auto; background:var(--btn); color:#fff; font-size:17px; font-weight:900;
+  letter-spacing:.06em; padding:14px 40px; border-radius:999px; box-shadow:0 5px 0 var(--btn-d);
+  display:flex; align-items:center; gap:11px; transition:transform .08s;}
+.dice-btn:active{transform:translateY(3px); box-shadow:0 2px 0 var(--btn-d);}
+.dice-btn:disabled{opacity:.5; cursor:default;}
+.dice-face{background:#fff; border-radius:11px; width:38px; height:38px; display:grid;
+  grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:6px; gap:1px;}
+.dice-face span{display:grid; place-items:center;}
+.dice-face i{width:6px; height:6px; border-radius:50%; background:var(--pink);}
+.dice-face.spin{animation:diceSpin .4s linear infinite;}
+@keyframes diceSpin{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.12)}}
+
+/* ---------- サイコロの演出 ---------- */
+.dice-stage{position:fixed; inset:0; z-index:90; display:none; flex-direction:column;
+  align-items:center; justify-content:center; gap:18px; background:rgba(242,249,253,.72);
+  backdrop-filter:blur(2px); pointer-events:none;}
+.dice-stage.on{display:flex;}
+/* 立体のサイコロ。6面ぶんの面を組んで、本体ごと転がす。
+   出目は「その面が正面を向く向き」に本体を回して見せる（JS の FACE_ROT） */
+.die-scene{--die:min(160px,38vw); width:var(--die); aspect-ratio:1; perspective:760px;}
+.die-scene.land{animation:bigLand .5s cubic-bezier(.2,1.4,.4,1);}
+.big-die{width:100%; height:100%; position:relative; transform-style:preserve-3d;}
+.big-die .face{position:absolute; inset:0; background:#fff; border-radius:24px;
+  border:2px solid #E8F0F6; box-shadow:inset 0 -6px 0 rgba(63,82,102,.07);
+  display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+  padding:15px; gap:4px; backface-visibility:hidden;}
+.big-die .f1{transform:                translateZ(calc(var(--die) / 2));}
+.big-die .f2{transform:rotateY(90deg)  translateZ(calc(var(--die) / 2));}
+.big-die .f3{transform:rotateX(90deg)  translateZ(calc(var(--die) / 2));}
+.big-die .f4{transform:rotateX(-90deg) translateZ(calc(var(--die) / 2));}
+.big-die .f5{transform:rotateY(-90deg) translateZ(calc(var(--die) / 2));}
+.big-die .f6{transform:rotateY(180deg) translateZ(calc(var(--die) / 2));}
+.big-die span{display:grid; place-items:center;}
+.big-die i{width:22%; aspect-ratio:1; min-width:12px; border-radius:50%; background:var(--pink);}
+.big-die.roll{animation:bigTumble 1.5s linear infinite;}
+.big-die.land{transition:transform .6s cubic-bezier(.2,.85,.3,1.15);}
+@keyframes bigTumble{from{transform:rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+  to{transform:rotateX(720deg) rotateY(1080deg) rotateZ(360deg)}}
+@keyframes bigLand{0%{transform:scale(1.22)}60%{transform:scale(.95)}100%{transform:scale(1)}}
+.die-msg{font-size:clamp(19px,4.6vw,26px); font-weight:900; color:var(--ink); letter-spacing:.06em;
+  min-height:1.6em;}
+
+/* ---------- モーダル ---------- */
+.overlay{position:fixed; inset:0; background:rgba(63,82,102,.42); z-index:100;
+  display:none; place-items:center; padding:16px;}
+.overlay.open{display:grid;}
+.modal{width:min(420px,100%); max-height:88vh; overflow-y:auto; background:var(--card);
+  border-radius:24px; box-shadow:0 12px 36px rgba(63,82,102,.28);
+  animation:pop .26s cubic-bezier(.2,.8,.3,1.2);}
+.modal.wide{width:min(620px,100%);}
+@keyframes pop{from{transform:scale(.88); opacity:0} to{transform:scale(1); opacity:1}}
+.m-head{padding:18px 20px 15px; text-align:center;}
+.m-tag{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:900;
+  letter-spacing:.1em; padding:4px 13px; border-radius:999px; color:#fff;}
+.modal h2{font-size:clamp(19px,4.4vw,23px); font-weight:900; margin-top:9px; line-height:1.45;}
+.m-sub{font-size:12px; font-weight:700; color:var(--sub);}
+.m-body{padding:4px 20px 20px;}
+.m-lead{font-size:13px; font-weight:700; color:#54677A; text-align:center; line-height:1.85;
+  margin-bottom:14px;}
+.m-note{background:#F7FBFD; border-radius:14px; padding:11px 14px; font-size:12.5px;
+  font-weight:700; line-height:1.8; margin-bottom:13px;}
+.m-note.priv{background:#FBF4FB;}
+.m-btn{display:block; width:100%; background:var(--btn); color:#fff; font-size:15px; font-weight:900;
+  padding:13px; border-radius:999px; margin-top:6px; box-shadow:0 4px 0 var(--btn-d); transition:transform .08s;}
+.m-btn:active{transform:translateY(2px); box-shadow:0 2px 0 var(--btn-d);}
+.m-btn.ghost{background:var(--card); color:var(--ink); box-shadow:var(--sh-s);}
+.fx-line{display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin:12px 0 14px;}
+.fx{background:#F7FBFD; border-radius:999px; padding:4px 14px; font-weight:900; font-size:14px;
+  display:inline-flex; align-items:center; gap:4px;}
+.big-amount{text-align:center; font-size:28px; font-weight:900; margin:10px 0 14px;}
+
+/* 選択肢（トビラ）。どれも同じ青のボタン。開くかどうかは押すまで分からない */
+.door-list{display:flex; flex-direction:column; gap:9px;}
+.door{display:flex; align-items:center; gap:13px; width:100%; text-align:left;
+  border-radius:16px; padding:13px 16px;
+  transition:background .14s, transform .08s; background:#E8F0F8; color:var(--ink);
+  box-shadow:inset 0 0 0 2px #DAE7F3; --leaf-fill:#E8F0F8;}
+/* トビラの目じるし。文字は置かず、アイコンだけを大きく左に。
+   わく（奥）と扉（手前）を重ねて置き、ホバーすると扉だけが手前にひらく。
+   ロビーのタイトルのトビラと同じ動き。閉じているあいだ扉はボタンと同じ色で、
+   ひらくと奥のくらがりが見える */
+.d-mark{flex:none; display:grid; place-items:center; width:30px; height:30px; color:#4B6E93;}
+.d-mark .ic{grid-area:1 / 1; width:30px; height:30px;}
+.d-mark .leaf{transform-origin:25% 50%; transition:transform .42s cubic-bezier(.2,.8,.3,1.2);}
+.door.pick:hover .d-mark .leaf,
+.door.pick:focus-visible .d-mark .leaf{transform:perspective(140px) rotateY(-58deg);}
+.d-mark.unseen{color:#6E5BA8;}
+.d-main{flex:1; min-width:0;}
+.door.pick{cursor:pointer;}
+.door.pick:hover{background:#DBE9F7; box-shadow:inset 0 0 0 2px #BED4EA; --leaf-fill:#DBE9F7;}
+.door:not(:disabled):active{transform:translateY(2px);}
+@media (prefers-reduced-motion:reduce){ .d-mark .leaf{transition:none;} }
+/* 押したあとの確認 */
+.c-card{border-radius:18px; padding:14px 16px; margin-bottom:15px;}
+.c-card.ok{background:#EAF6EF; box-shadow:inset 0 0 0 2px #C9E7D6;}
+.c-card.ng{background:#FAEEE9; box-shadow:inset 0 0 0 2px #EFD7CB;}
+.c-title{font-size:17px; font-weight:900; line-height:1.5; margin-bottom:3px;}
+.c-key{margin-top:9px; font-size:12.5px; font-weight:900; color:#7A5E2E; line-height:1.7;}
+.c-key .c-now{display:block; font-size:11.5px; font-weight:700; color:var(--sub);}
+.c-key .m1, .c-key .m2{display:inline-flex; align-items:center; gap:2px; font-weight:900;}
+.c-ask{text-align:center; font-size:14.5px; font-weight:900; margin:4px 0 12px; line-height:1.7;}
+.c-ask.ng{color:#B4643C; font-size:13.5px; display:flex; align-items:center;
+  justify-content:center; gap:6px; flex-wrap:wrap;}
+.d-badge{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:900;
+  letter-spacing:.04em; border-radius:999px; padding:2px 10px; margin-bottom:6px;}
+.d-badge.plain{background:#D6E5F4; color:#4B6E93;}
+.d-badge.open{background:#CFEBDC; color:#3B7E58;}
+.d-badge.lock{background:#F6DFD2; color:#B4682F;}
+.d-badge.unseen{background:#E8E2F7; color:#6E5BA8;}
+/* トビラの画面に置く、画面上部とおなじプレイヤーカード。
+   ここは手もとを確かめる場所なので、上のバーより文字を大きくする。
+   枠は外に出る影ではなく内側の線にして、下のトビラのボタンと横幅をそろえる */
+.pcard.m-pcard{opacity:1; margin-bottom:13px; padding:12px 16px; border-radius:16px; gap:11px;
+  box-shadow:inset 0 0 0 2.5px var(--ring, var(--pink)), var(--sh-s);}
+.pcard.m-pcard .av{width:46px; height:46px;}
+.pcard.m-pcard .nm{font-size:15px; gap:6px;}
+.pcard.m-pcard .age{font-size:12.5px;}
+.pcard.m-pcard .row{font-size:15px; gap:13px; margin-top:3px;}
+.pcard.m-pcard .mine-badge{font-size:11.5px; padding:0 8px;}
+.door .d-title{display:block; font-size:15px; font-weight:900; line-height:1.45;}
+.door .d-desc{display:block; font-size:11.5px; font-weight:700; color:#6E7E8C; margin-top:3px; line-height:1.65;}
+.door .d-cons{display:block; font-size:11.5px; font-weight:700; color:#B4707A; margin-top:4px; line-height:1.65;}
+.door.locked .d-cons{color:#BC8A8A;} .door.unseen .d-cons{display:none;}
+.door .d-key{display:flex; font-size:11.5px; font-weight:900; margin-top:7px;
+  align-items:center; gap:4px; flex-wrap:wrap;}
+.door.unseen{background:repeating-linear-gradient(45deg,#F1F3F5,#F1F3F5 9px,#EAEEF1 9px,#EAEEF1 18px);
+  cursor:not-allowed; box-shadow:none;}
+.door.unseen .d-title{color:#9AA7B2; letter-spacing:.16em;}
+.door.unseen .d-desc{color:#AEB9C2;}
+.d-cost{font-size:13px; font-weight:900; margin-top:8px; display:flex; align-items:center; gap:5px;}
+.d-cost.minus{color:#C25B5B;} .d-cost.plus{color:#4FA85E;}
+.d-cost s{opacity:.55; margin-right:3px; font-weight:700;}
+
+/* あいことばのチップ */
+.room-chip{flex:none; display:inline-flex; align-items:center; gap:5px; background:var(--card);
+  border-radius:999px; padding:5px 12px; font-family:inherit; font-size:12.5px; font-weight:900;
+  letter-spacing:.14em; color:var(--btn); box-shadow:var(--sh-s); cursor:pointer;}
+.room-chip:active{transform:translateY(1px);}
+.room-chip.copied{background:var(--ok); color:#1F5B3A;}
+@media (max-width:560px){ .logo{display:none;} }
+
+/* 他人がえらんでいるあいだの帯 */
+.watch-bar{position:fixed; left:0; right:0; bottom:calc(76px + env(safe-area-inset-bottom));
+  z-index:45; display:none; align-items:center; gap:10px; width:min(560px,calc(100% - 24px));
+  margin:0 auto; background:var(--card); border-radius:16px; padding:9px 14px;
+  box-shadow:var(--sh); border:2px solid #E3EDF4;}
+.watch-bar.on{display:flex;}
+.watch-bar .av{width:32px; height:32px; border-radius:50%; flex:none; border:2px solid var(--line);
+  background-color:#F7FBFD; background-size:cover; background-position:center 16%;}
+.watch-bar .wb-txt{flex:1; min-width:0; font-size:12.5px; font-weight:900; line-height:1.5;}
+.watch-bar .wb-txt small{display:block; font-size:11px; font-weight:700; color:var(--sub);}
+.watch-bar .wb-hint{flex:none; font-size:10.5px; font-weight:700; color:var(--sub); max-width:150px; line-height:1.45;}
+@media (max-width:560px){ .watch-bar .wb-hint{display:none;} }
+
+/* 観戦 */
+.modal.watching{background:#F8FAFC;}
+.watch-head{display:flex; align-items:center; justify-content:center; gap:8px; background:var(--btn);
+  color:#fff; border-radius:999px; padding:7px 16px; font-size:12.5px; font-weight:900; margin:0 20px 14px;}
+.watch-head .av{width:24px; height:24px; border-radius:50%; border:2px solid #fff; flex:none;
+  background-color:#fff; background-size:cover; background-position:center 16%;}
+/* 見出しが枠のいちばん上に来るとき（トビラを見まもる画面）は、上にも余白をとる */
+.modal > .watch-head:first-child{margin-top:18px;}
+.watch-body{text-align:center; padding:0 20px 18px;}
+.watch-lead{font-size:13px; font-weight:700; color:var(--sub); line-height:1.85;}
+.watch-door{display:inline-block; background:#FFF1F5; border-radius:18px; padding:14px 24px;
+  margin:12px 0 8px; font-size:19px; font-weight:900;}
+.watch-wait{font-size:13px; font-weight:900; color:var(--sub); margin:6px 0 10px;}
+.waiting-note{text-align:center; font-weight:700; color:var(--sub); margin-top:10px; font-size:13px;}
+
+/* ステータス変化 */
+.chg{border-radius:22px; overflow:hidden;}
+.chg-head{background:var(--gold); text-align:center; padding:12px;}
+.chg-head span{font-size:17px; font-weight:900; letter-spacing:.12em; color:#7A6320;}
+.chg-body{display:flex; gap:13px; align-items:center; padding:16px 18px 6px;}
+.chg-char{width:74px; height:98px; flex:none; background-size:contain;
+  background-repeat:no-repeat; background-position:center bottom;}
+.chg-rows{flex:1; min-width:0; display:flex; flex-direction:column; gap:7px;}
+.chg-r{display:grid; grid-template-columns:58px 1fr auto; align-items:center; gap:8px;
+  border-radius:12px; padding:8px 12px;}
+.chg-r.money{background:#FFF4DC;} .chg-r.money .k{color:#B98A2A;}
+.chg-r.learn{background:#E7F2FC;} .chg-r.learn .k{color:#3F7EAC;}
+.chg-r.happy{background:#FDECF2;} .chg-r.happy .k{color:#CE6288;}
+.chg-r .k{font-size:11px; font-weight:900;}
+.chg-r .v{font-size:14.5px; font-weight:900; display:flex; align-items:center; gap:3px;}
+.chg-r .v s{color:#B4C1CB; font-weight:700; margin-right:3px; display:inline-flex; align-items:center; gap:2px;}
+.chg-r .d{font-size:13.5px; font-weight:900;}
+.up{color:#4FA85E;} .dn{color:#D9737B;}
+
+/* 家庭カード */
+/* 上の帯は、そのカードを見ている本人の色。盤面のコマ・上部の手番表示とそろえる */
+.fam-top{padding:16px 18px 14px; display:flex; gap:13px; align-items:center;
+  background:linear-gradient(120deg,
+    color-mix(in srgb, var(--fam, var(--pink)) 92%, var(--ink)),
+    color-mix(in srgb, var(--fam, var(--pink)) 74%, var(--ink)));}
+.fam-top .av{width:60px; height:60px; border-radius:50%; flex:none; border:3px solid #fff;
+  background-color:#fff; background-size:cover; background-position:center 16%;
+  box-shadow:0 2px 8px rgba(63,82,102,.22);}
+.fam-top .pill{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:900;
+  letter-spacing:.08em; background:rgba(255,255,255,.92); border-radius:999px; padding:2px 10px; margin-bottom:5px;}
+.fam-top .nm{font-size:16.5px; font-weight:900; line-height:1.45; color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.15);}
+.fam-story{font-size:12.5px; font-weight:700; line-height:1.9; color:#54677A;
+  background:#F7FBFD; border-radius:14px; padding:12px 14px;}
+.fam-asa{font-size:11.5px; font-weight:700; color:#7C8B99; margin-top:9px; line-height:1.75;}
+.fam-asa b{color:#C98A3C;}
+/* 1日の暮らしにつかえるお金。生まれた場所の差が、いちばん短く出る一行 */
+.fam-daily{font-size:11.5px; font-weight:700; color:#7C8B99; margin-top:6px; line-height:1.75;}
+.fam-daily b{color:#4A3A30; font-size:12.5px;}
+.fam-daily .note{color:#C4788A;}
+/* カードの中の「いまのステータス」と「トビラの記録」 */
+.now-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+.ns{border-radius:13px; padding:8px 10px 9px;}
+.ns.money{background:#FFF4DC;} .ns.learn{background:#E7F2FC;} .ns.happy{background:#FDECF2;}
+.ns .k{display:flex; align-items:center; gap:4px; font-size:10.5px; font-weight:900;}
+.ns.money .k{color:#B98A2A;} .ns.learn .k{color:#3F7EAC;} .ns.happy .k{color:#CE6288;}
+.ns .v{font-size:17px; font-weight:900; line-height:1.4;}
+.now-doors{margin-top:9px; background:#F7FBFD; border-radius:13px; padding:9px 12px;}
+.now-doors .k{display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:900; color:var(--sub);}
+.now-doors .dl{display:flex; flex-wrap:wrap; gap:4px 12px; font-size:11.5px; font-weight:700; margin-top:4px;}
+.now-doors .lo{color:#4CA872;} .now-doors .ll{color:#C98A3C;} .now-doors .lu{color:#7E6BC4;}
+.fam-perk{margin-top:11px; background:linear-gradient(100deg,#FFF0F6,#F3F0FF); border-radius:14px;
+  padding:11px 14px;}
+.fam-perk .k{font-size:10.5px; font-weight:900; color:#A9629B; letter-spacing:.08em;
+  display:flex; align-items:center; gap:5px;}
+.fam-perk .v{font-size:13px; font-weight:900; line-height:1.6; color:#5B4A6B;}
+.fam-perk .v small{display:block; font-weight:700; font-size:11.5px; margin-top:2px;}
+/* 自分がえらんできたこと（本人のカードの中だけ） */
+.fam-mine{margin-top:11px; background:#F1F8F4; border-radius:14px; padding:11px 13px;}
+.fam-mine .k{font-size:10.5px; font-weight:900; color:#3E7D5F; letter-spacing:.06em;
+  display:flex; align-items:center; gap:5px; margin-bottom:8px;}
+.mc-list{display:flex; flex-direction:column; gap:6px;}
+.mc-row{display:flex; gap:9px; align-items:flex-start; background:#fff; border-radius:11px; padding:7px 10px;}
+.mc-age{flex:none; width:40px; font-size:10.5px; font-weight:900; color:var(--sub); padding-top:2px;}
+.mc-main{min-width:0; display:flex; flex-direction:column;}
+.mc-door{font-size:10.5px; font-weight:900; color:var(--sub);}
+.mc-t{font-size:12.5px; font-weight:900; line-height:1.55;}
+.mc-fx{display:flex; gap:9px; font-size:11px; font-weight:900; margin-top:3px;}
+.mc-note{font-size:10.5px; font-weight:700; color:#7D9A8A; line-height:1.7; margin-top:9px;}
+.m-note.talk{background:#F1F8F4; color:#37604C;}
+.m-note.talk small{display:inline-block; margin-top:2px; font-size:11px; font-weight:700; color:#6F8E7E;}
+.fam-secret{margin-top:11px; font-size:11px; font-weight:700; color:var(--sub); text-align:center;
+  display:flex; align-items:center; justify-content:center; gap:5px;}
+
+/* ---------- 結果発表 ---------- */
+#result{padding:30px 16px 60px;}
+.res-inner{max-width:760px; margin:0 auto;}
+#result h1{font-size:clamp(25px,6vw,36px); font-weight:900; text-align:center; margin-bottom:6px;
+  letter-spacing:.06em;}
+.res-sub{text-align:center; font-weight:700; color:var(--sub); margin-bottom:24px; font-size:13.5px;}
+.res-card{background:var(--card); border-radius:20px; padding:16px 18px 18px; margin-bottom:14px;
+  box-shadow:var(--sh);}
+.res-head{display:flex; gap:12px; align-items:center;}
+.res-head .av{width:50px; height:50px; border-radius:50%; flex:none; border:3px solid var(--pink);
+  background-color:#F7FBFD; background-size:cover; background-position:center 16%;}
+.rank{display:inline-block; font-size:12px; font-weight:900; background:var(--gold); color:#7A6320;
+  border-radius:999px; padding:2px 12px;}
+.r-name{font-size:17px; font-weight:900; margin-top:2px;}
+.r-fam{font-size:12px; font-weight:900; display:flex; align-items:center; gap:5px; margin-top:1px;}
+.r-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:12px;}
+.rs{border-radius:15px; padding:10px 12px 11px;}
+.rs.money{background:#FFF4DC;} .rs.learn{background:#E7F2FC;} .rs.happy{background:#FDECF2;}
+.rs .k{display:flex; align-items:center; gap:5px; font-size:11.5px; font-weight:900; line-height:1.4;}
+.rs .k .ic{width:18px; height:18px;}
+.rs.money .k{color:#B98A2A;} .rs.learn .k{color:#3F7EAC;} .rs.happy .k{color:#CE6288;}
+.rs .v{font-size:20px; font-weight:900; line-height:1.4; margin-top:3px;
+  display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;}
+.rs .v s{font-size:12.5px; font-weight:700; color:#AEBBC5;}
+.rs .d{font-size:12.5px; font-weight:900; color:var(--sub); margin-top:1px;}
+.rs .d.up{color:#3F9E5F;} .rs .d.dn{color:#CE5A62;}
+.r-loan{margin-top:10px; background:#FFF6E2; border-radius:13px; padding:8px 13px;
+  font-size:12px; font-weight:700; color:#A0762A; display:flex; align-items:center; gap:6px;}
+@media (max-width:520px){ .r-stats{grid-template-columns:1fr;} .rs .v{font-size:18px;} }
+.r-ending{margin-top:10px; background:#FFFBF0; border-radius:14px; padding:11px 14px;
+  font-size:12.5px; font-weight:700; line-height:1.9; color:#6B5C3E;}
+.r-ending b{color:#B07F28;}
+.doorbar{display:flex; height:14px; border-radius:999px; overflow:hidden; margin-top:12px; background:#EDF3F7;}
+.seg-open{background:var(--ok);} .seg-lock{background:var(--lock);} .seg-unseen{background:var(--unseen);}
+.doorbar-label{font-size:11.5px; font-weight:900; color:var(--sub); margin-top:7px; line-height:1.7;}
+.doorbar-label .lo{color:#4CA872;} .doorbar-label .ll{color:#C98A3C;} .doorbar-label .lu{color:#7E6BC4;}
+.rv-btn{margin-top:11px; font-size:13px;}
+.res-btns{text-align:center; margin-top:24px;}
+
+/* あそびかた・ネタバラシ・トビラ一覧（どれも .rule-page を使う）
+   あそびかたは、ページごとに中身の量がちがっても高さを変えない（「つぎへ」が動かないように）。
+   いちばん高いページの高さは JS が測って min-height に入れる。ここでは点と次へを下にそろえる */
+.rule-page{position:relative; text-align:left; padding:20px; display:flex; flex-direction:column;}
+/* あまった高さは、項目の上下に分ける（下だけがぽっかり空かないように） */
+.rule-page .rule-list{flex:1 1 auto; justify-content:center;}
+.rule-page .rule-dots{margin-top:auto;}
+.rule-list{display:flex; flex-direction:column; gap:10px;}
+.rule-item{display:flex; gap:12px; align-items:flex-start; background:#F7FBFD; border-radius:15px;
+  padding:12px 14px; font-size:13.5px; line-height:1.85; font-weight:700;}
+.rule-item .r-ic{flex:none; color:var(--btn); width:22px; height:22px; margin-top:3px;}
+.rule-item .r-ic .ic{width:22px; height:22px;}
+.rv-ic .ic{width:20px; height:20px;}
+.rule-dots{display:flex; gap:7px; justify-content:center; margin:16px 0 4px;}
+.rule-dots span{width:9px; height:9px; border-radius:50%; background:var(--line);}
+.rule-dots span.on{background:var(--pink);}
+.rule-nav{display:flex; gap:10px; justify-content:center; margin-top:10px;}
+.rule-nav .m-btn{margin:0;}
+.rv-list{display:flex; flex-direction:column; gap:13px; margin-bottom:14px;}
+.rv-door{background:#F7FBFD; border-radius:16px; padding:12px 14px;}
+.rv-title{font-weight:900; font-size:14.5px; margin-bottom:8px;}
+.rv-opt{display:flex; gap:10px; align-items:flex-start; padding:8px 11px; border-radius:12px;
+  text-align:left; background:#fff;}
+.rv-opt + .rv-opt{margin-top:6px;}
+.rv-opt.chosen{background:#E8F7EE;} .rv-opt.locked{background:#FBF1EA;}
+.rv-opt.unseen{background:#F2EEFC;}
+.rv-ic{flex:none; width:20px; height:20px; margin-top:2px;}
+.rv-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.rv-t{font-weight:900; font-size:13px;} .rv-d{font-size:11.5px; color:var(--sub); line-height:1.6;}
+.rv-meta{font-size:11.5px; font-weight:900; color:#7C8B99;}
+.rv-st{flex:none; font-size:10.5px; font-weight:900; color:var(--sub); padding-top:3px;}
+.rv-who{display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; margin-top:5px;
+  font-size:11px; font-weight:900;}
+.who{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700;
+  background:#fff; border-radius:999px; padding:1px 9px; box-shadow:var(--sh-s);}
+.who .p-dot{width:10px; height:10px;}
+.rv-untrod{font-size:10.5px; font-weight:700; margin-left:8px; background:var(--line);
+  border-radius:999px; padding:2px 10px;}
+
+/* ---------- 国内版（1画面版）から持ってきた部品 ---------- */
+/* 「195万」がスマホで折り返さないように、1項目は必ず1行で出す */
+.pcard .row span{white-space:nowrap;}
+.pcard .age{white-space:nowrap;}
+/* 名前が長くても「あなた」や年齢が縦に積み重ならないよう、名前のほうを省略する */
+.pcard .nm .pn{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.mine-badge{flex:none; white-space:nowrap;}
+.m1.neg{color:#C25B5B;}
+/* 家庭カードの「まち・仕送り・見えていない選択肢」の行 */
+.fam-line{font-size:11.5px; font-weight:700; color:#7C8B99; margin-top:9px; line-height:1.75;
+  display:flex; align-items:flex-start; gap:5px;}
+.fam-line b{color:#4A3A30; font-size:12.5px;}
+.fam-line .note{color:#C4788A;}
+.fam-story + .now-stats{margin-top:11px;}
+/* 結果発表：家庭カードの物語と、公開された「とくい」 */
+.r-story{font-size:12px; line-height:1.8; color:var(--sub); font-weight:700; margin-top:9px;
+  background:#F7FBFD; border-radius:13px; padding:9px 12px;}
+.r-perk{margin-top:8px; background:#FFF6E2; border-radius:13px; padding:8px 13px;
+  font-size:12px; font-weight:700; color:#A0762A; line-height:1.7;}
+.r-perk b{color:#7A5A1A;}
+/* ふりかえりのまとめ箱。文字を反転させるが、角も色もやわらかく */
+.insight{background:#47596B; color:#EDF4F9; border-radius:22px; padding:22px; margin-top:24px;
+  line-height:2; font-size:13.5px; font-weight:700; box-shadow:var(--sh);}
+.insight b{color:var(--gold);}
+.res-btns .wait-again{font-size:13px; font-weight:700; color:var(--sub);}
+
+/* 進行役パネル */
+#hostOverlay{z-index:120;}
+body.host-open #overlay{display:none !important;}
+.host-note{background:#F7FBFD; border-radius:14px; padding:11px 14px; font-size:12.5px;
+  font-weight:700; line-height:1.8; margin-bottom:14px;}
+.host-list{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
+.host-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:#F7FBFD;
+  border-radius:14px; padding:9px 12px;}
+.host-row.off{opacity:.55;}
+.host-row .hn{flex:1; min-width:110px; font-weight:900; display:flex; align-items:center; gap:6px;}
+.host-row .tag{font-size:11px; font-weight:900; background:#fff; border-radius:999px; padding:2px 9px;}
+.host-act{border-radius:999px; background:#fff; font-weight:900; font-size:12px; color:var(--btn);
+  padding:6px 13px; box-shadow:var(--sh-s);}
+.host-act.danger{color:var(--happy);}
+.host-btns{display:flex; flex-direction:column; gap:8px;}
+.host-btns .host-act{font-size:14px; padding:11px 14px;}
+
+@media (max-width:640px){
+  .topbar .logo{display:none;}
+  .pcard{flex:1 0 150px; padding:7px 9px;}
+  .pcard .av{width:32px; height:32px;}
+  #game{padding-bottom:96px;}
+}
+@media (max-width:860px){
+  .help-btn .lbl{display:none;}
+  .help-btn{width:40px; padding:0;}
+}
+/* スマホのせまい幅では、上の帯の手番は顔だけにする（名前は下のサイコロのボタンに出ている）。
+   文字を残すと1〜2文字だけが見切れて、かえって読めない */
+@media (max-width:420px){
+  .turn-pill{flex:none;}
+  .turn-pill .tp-txt{display:none;}
+  .turn-pill .tp-off{font-size:.72em;}
+  .turn-pill.only-txt{flex:1;}
+  .turn-pill.only-txt .tp-txt{display:block;}
+  /* 数字の増減は「40万 → 94万」を1行で読ませる（金額の途中で折り返さない） */
+  .chg-char{width:58px; height:80px;}
+  .chg-body{gap:9px;}
+  .chg-r{grid-template-columns:46px 1fr auto; gap:6px; padding-left:9px; padding-right:9px;}
+  .chg-r .v{font-size:13.5px;}
+  /* 進行役メニュー：名前は1行に、タグとボタンはその下に並べる */
+  .host-row .hn{flex:1 1 100%; min-width:0;}
+}
+.chg-r .v, .chg-r .v s, .chg-r .d{white-space:nowrap;}
+.host-row .tag{white-space:nowrap;}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important;}}
+</style>
+</head>
+<body>
+
+<!-- 描いたアイコン（絵文字は使わない） -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true"><defs>
+<symbol id="ic-coin" viewBox="0 0 24 24"><ellipse cx="12" cy="8.6" rx="8" ry="3.4" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M4 8.6v6.8c0 1.9 3.6 3.4 8 3.4s8-1.5 8-3.4V8.6" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
+<symbol id="ic-cost" viewBox="0 0 24 24"><circle cx="9.5" cy="9.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M18 12v7M18 20.5l-3.2-3.2M18 20.5l3.2-3.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ic-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor"/></symbol>
+<symbol id="ic-book" viewBox="0 0 24 24"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+<symbol id="ic-door" viewBox="0 0 24 24"><path d="M6 21V7a6 6 0 0 1 12 0v14z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="14.6" cy="13.5" r="1.4" fill="currentColor"/></symbol>
+<symbol id="ic-doorway" viewBox="0 0 24 24"><path d="M6 21V7a6 6 0 0 1 12 0v14z" fill="currentColor" opacity=".22"/></symbol>
+<symbol id="ic-door-leaf" viewBox="0 0 24 24"><path d="M6 21V7a6 6 0 0 1 12 0v14z" fill="var(--leaf-fill,#E8F0F8)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="14.6" cy="13.5" r="1.4" fill="currentColor"/></symbol>
+<symbol id="ic-start" viewBox="0 0 24 24"><path d="M4 12h13M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ic-goal" viewBox="0 0 24 24"><path d="M6 21V4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M6 4h13v9H6z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M6 4h6.5v4.5H6zM12.5 8.5H19V13h-6.5z" fill="currentColor"/></symbol>
+<symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10.5V20h13V10.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+<symbol id="ic-sun" viewBox="0 0 24 24"><path d="M2 18h20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M6 18a6 6 0 0 1 12 0" fill="currentColor" opacity=".25"/><path d="M6 18a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 5v2.4M5 8l1.7 1.7M19 8l-1.7 1.7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M8.4 10.5V7.8a3.6 3.6 0 0 1 7.2 0v2.7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="ic-eye" viewBox="0 0 24 24"><path d="M2 12s3.8-6 10-6 10 6 10 6-3.8 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></symbol>
+<symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.8-4.7 4.4 1.2 6.2L12 17.3 6.5 20.2l1.2-6.2L3 9.6l6.3-.8z" fill="currentColor"/></symbol>
+<symbol id="ic-heart" viewBox="0 0 24 24"><path d="M12 20.5S3.5 15 3.5 9.2A4.7 4.7 0 0 1 12 6.6a4.7 4.7 0 0 1 8.5 2.6c0 5.8-8.5 11.3-8.5 11.3z" fill="currentColor"/></symbol>
+<symbol id="ic-spark" viewBox="0 0 24 24"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="currentColor"/><path d="M19 15l.9 2.6L22.5 18l-2.6.9L19 21.5l-.9-2.6L15.5 18l2.6-.9z" fill="currentColor" opacity=".7"/></symbol>
+<symbol id="ic-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3C9.4 5.6 9.4 18.4 12 21" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
+<symbol id="ic-die" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.4" cy="8.4" r="1.7" fill="currentColor"/><circle cx="15.6" cy="15.6" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/></symbol>
+<symbol id="ic-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="11" r="2.2" fill="currentColor"/><path d="M5 16.5c.7-1.6 5-1.6 5.8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14.5 10h4.5M14.5 13.6h4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="ic-help" viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 3.6 2.9c-.8.2-1.1.8-1.1 1.6v.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><circle cx="11.6" cy="17.6" r="1.5" fill="currentColor"/></symbol>
+<symbol id="ic-tools" viewBox="0 0 24 24"><path d="M10.1 2.8h3.8l.4 2.4 2 1.2 2.3-.9 1.9 3.3-1.9 1.5v2.4l1.9 1.5-1.9 3.3-2.3-.9-2 1.2-.4 2.4h-3.8l-.4-2.4-2-1.2-2.3.9-1.9-3.3 1.9-1.5v-2.4L3.5 8.8l1.9-3.3 2.3.9 2-1.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="ic-cap" viewBox="0 0 24 24"><path d="M12 4 22 9l-10 5L2 9z" fill="currentColor"/><path d="M6 11.4V16c0 1.6 2.7 2.8 6 2.8s6-1.2 6-2.8v-4.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+<symbol id="ic-check" viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 6.8V12l3.6 2.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="ic-walk" viewBox="0 0 24 24"><circle cx="13" cy="4.2" r="2.2" fill="currentColor"/><path d="M13.5 8 10 11l1 4 3 5M10 11 7 15M11 15l-2 6M13.5 9.5 17 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="ic-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2.8 20c0-3.4 2.8-5.4 6.2-5.4s6.2 2 6.2 5.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16.4 5.2a3.4 3.4 0 0 1 0 6.6M18 14.9c2.2.6 3.6 2.4 3.6 5.1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="ic-sound" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="currentColor"/><path d="M15.8 9.2a4 4 0 0 1 0 5.6M18.4 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="ic-mute" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<!-- ========== LOBBY ========== -->
+<section id="lobby" class="screen active">
+  <div class="setup-card">
+    <div class="title-door" aria-hidden="true"><div class="leaf"></div><div class="knob"></div></div>
+    <h1 class="game-title">トビラ</h1>
+    <p class="game-sub" id="gameSub"></p>
+    <div class="row-btns">
+      <button class="chip-btn" id="helpBtnLobby"><svg class="ic s"><use href="#ic-help"/></svg>あそびかた</button>
+      <button class="chip-btn" id="seBtnLobby" data-se="off">音</button>
+    </div>
+    <div class="player-inputs">
+      <div class="p-row"><span class="p-dot" style="background:#F4879F"></span>
+        <input id="nameInput" maxlength="12" placeholder="なまえ"></div>
+    </div>
+    <button class="big-btn" id="createBtn">ルームをつくる</button>
+    <p class="setup-note" id="joinNote"></p>
+    <div class="player-inputs">
+      <div class="p-row"><span class="p-dot" style="background:#FBD96B"></span>
+        <input id="codeInput" maxlength="6" placeholder="ABC123" style="text-transform:uppercase; letter-spacing:.2em"></div>
+    </div>
+    <button class="chip-btn" id="joinBtn">ルームに参加</button>
+    <p class="setup-note" id="lobbyNote"></p>
+    <p class="setup-note" id="connMsg" style="color:#D9737B"></p>
+  </div>
+</section>
+
+<!-- ========== WAITING ========== -->
+<section id="wait" class="screen">
+  <div class="setup-card">
+    <h1 class="game-title" style="font-size:clamp(24px,7vw,36px)" id="waitTitle"></h1>
+    <p class="game-sub" id="codeLabel"></p>
+    <div class="room-code" id="roomCode">------</div>
+    <p class="setup-note" id="shareNote"></p>
+    <div id="waitList" class="player-inputs"></div>
+    <!-- 盤面のあらまし（国内版の盤面は1種類だけなので、選ぶボタンは出さない） -->
+    <p class="setup-note" id="modeNote"></p>
+    <label class="fac-toggle" id="heavyWrap">
+      <input type="checkbox" id="heavyToggle">
+      <span id="heavyLabel"></span>
+    </label>
+    <button class="big-btn" id="startBtn"></button>
+    <p class="setup-note" id="waitNote"></p>
+    <div id="claimWrap" style="display:none; margin-top:10px">
+      <button class="chip-btn" id="claimBtn"></button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== GAME ========== -->
+<section id="game" class="screen">
+  <div class="sticky-head">
+    <div class="topbar">
+      <div class="logo" id="logoTxt">トビラ</div>
+      <!-- あいことば。途中で入りなおす人に伝えられるよう、ゲーム中もずっと出しておく -->
+      <button class="room-chip" id="roomChip" title=""></button>
+      <div class="turn-pill" id="turnPill"></div>
+      <button class="help-btn" id="hostBtn" style="display:none"><svg class="ic"><use href="#ic-tools"/></svg><span class="lbl" id="hostBtnLabel">進行</span></button>
+      <button class="help-btn" id="seBtn" data-se="off"><svg class="ic"><use href="#ic-sound"/></svg><span class="lbl" id="seBtnLabel">音</span></button>
+      <button class="help-btn" id="helpBtnGame"><svg class="ic"><use href="#ic-help"/></svg><span class="lbl" id="helpBtnLabel">あそびかた</span></button>
+      <button class="help-btn" id="cardBtn"><svg class="ic"><use href="#ic-card"/></svg><span class="lbl" id="cardBtnLabel">じぶんのカード</span></button>
+    </div>
+    <div class="players-strip" id="playersStrip"></div>
+  </div>
+  <div class="board-wrap"><svg id="board" viewBox="0 0 1160 800"></svg></div>
+  <!-- 他人がえらんでいるあいだの帯。画面をふさがないので、待つあいだも盤面と自分のカードが見られる -->
+  <div class="watch-bar" id="watchBar"></div>
+  <div class="controls">
+    <button class="dice-btn" id="diceBtn" data-se="off">
+      <span class="dice-face" id="diceFace"></span>
+      <span id="diceLabel"></span>
+    </button>
+  </div>
+</section>
+
+<!-- ========== RESULT ========== -->
+<section id="result" class="screen">
+  <div class="res-inner">
+    <h1 id="resTitle"></h1>
+    <p class="res-sub" id="resSub"></p>
+    <p class="setup-note" id="resLeftNote" style="margin-bottom:8px"></p>
+    <div id="resultList"></div>
+    <div style="text-align:center; margin-bottom:10px">
+      <button class="chip-btn" id="allDoorsBtn"></button>
+    </div>
+    <div class="insight" id="insightBox"></div>
+    <div class="res-btns"><button class="big-btn" id="againBtn"></button><p class="wait-again" id="againNote"></p></div>
+  </div>
+</section>
+
+<!-- サイコロの演出（画面中央） -->
+<div class="dice-stage" id="diceStage" aria-hidden="true">
+  <div class="die-scene" id="dieScene"><div class="big-die" id="bigDie"></div></div>
+  <div class="die-msg" id="dieMsg"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>
+</div>
+<div class="overlay" id="hostOverlay">
+  <div class="modal wide" id="hostBox" role="dialog" aria-modal="true"></div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
