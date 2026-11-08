@@ -220,7 +220,9 @@ async function cardVisibility() {
   }
   passed++; console.log("  ok　ほかの人の「とくい」と見えない選択肢のタグは届かない");
   if (!a.you || !a.you.fam || !a.you.fam.perkText) throw new Error("自分のとくいは見えてほしい");
-  if (!Array.isArray(a.you.hidden) || typeof a.you.hiddenN !== "number") throw new Error("自分の見えない選択肢の情報は自分に届いてほしい");
+  if (!Array.isArray(a.you.hidden)) throw new Error("自分の見えない選択肢の情報は自分に届いてほしい");
+  /* 家庭カードは見せ合うので、？？？の数はカードに出さない（出すと結果発表の前に仕組みがわかる） */
+  if ("hiddenN" in a.you) throw new Error("見えていない選択肢の数は家庭カード用に送らない");
   passed++; console.log("  ok　自分のとくい・見えない選択肢の数は自分に届く");
 
   /* 結果発表までずっと秘密のまま。結果発表になったら全員分が公開される */

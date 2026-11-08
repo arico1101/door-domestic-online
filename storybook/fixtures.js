@@ -46,7 +46,6 @@ export function createState({ game = createGame(), viewerId } = {}) {
   const you = viewer?.fam ? {
     fam: viewer.fam, hidden: viewer.hidden, perk: viewer.perk, allow: viewer.allow,
     loan: viewer.loan, seidoDiscount: viewer.seidoDiscount, seen: viewer.seen,
-    hiddenN: R.hiddenOptionCount(viewer, viewer.pos, M),
     open: viewer.open, locked: viewer.locked, unseen: viewer.unseen,
     myChoices: (viewer.doorLog || []).filter(entry => entry.chosen != null).map(entry => ({
       age: entry.age, door: entry.title, variant: entry.variant,

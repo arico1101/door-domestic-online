@@ -1140,7 +1140,6 @@ function showCard(review, onClose) {
   const p = YOU;
   const me = G.players.find(x => x.id === MYPID) || { money: p.fam.money, learn: 1, happy: 0, name: "", pos: 0, color: R.PCOLORS[0] };
   const tone = R.FAM_TONE[p.fam.region] || ["#E9A87C", "#D98E63"];
-  const hiddenN = p.hiddenN || 0;
   lastKey = "card";
   const done = () => {
     closeModal();
@@ -1158,7 +1157,6 @@ function showCard(review, onClose) {
     <div class="m-body">
       ${review ? "" : `<p class="m-lead">あなたのスタート地点が書いてあります。カードはみんなで見てOK。<br>でも<b>「とくい」の欄だけは${me.name} さんだけ</b>が見てね。</p>`}
       <div class="fam-story">${p.fam.story}${famLines(p.fam.region, p.allow)}
-        <div class="fam-line">${ic("eye", "s")}<span>まだ見えていない選択肢：<b>${hiddenN}個</b>${hiddenN > 0 ? `<span class="note">（そのマスでは「？？？」と表示されます）</span>` : ""}</span></div>
       </div>
       ${nowStats(me)}
       ${(p.open + p.locked + p.unseen) > 0 ? `<div class="now-doors">

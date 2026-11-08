@@ -149,8 +149,6 @@ export class Room {
       you: me && me.fam ? {
         fam: me.fam, hidden: me.hidden, perk: me.perk, allow: me.allow,
         loan: me.loan, seidoDiscount: me.seidoDiscount, seen: me.seen,
-        /* これから先のマスで「？？？」になる選択肢の数（家庭カードに出す） */
-        hiddenN: R.hiddenOptionCount(me, me.pos, R.mode(g.mode)),
         /* 自分のトビラの記録。すべて本人が画面で見たことのある数なので、ここで渡してよい */
         open: me.open, locked: me.locked, unseen: me.unseen,
         /* 「じぶんが何を選んだか」だけ。えらばなかった選択肢＝？？？の中身は
