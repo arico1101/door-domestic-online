@@ -1,0 +1,13 @@
+{
+  "name": "tobira-domestic",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node test/domestic.mjs && node test/ops.mjs && N=1 node test/play.mjs && N=6 node test/play.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}
